@@ -25,7 +25,18 @@ jobs:
             -d -I -S \
             -z "-config api.disablekey=true"
 
+    - name: Check for High/Critical Vulnerabilities
+      run: |
+        echo "Checking ZAP report for High/Critical alerts..."
+        if jq '.site[].alerts[] | select(.risk == "High" or .risk == "Critical")' dast-report.json | grep -q .; then
+          echo "❌ High or Critical vulnerabilities found!"
+          exit 1
+        else
+          echo "✅ No High/Critical vulnerabilities found."
+        fi
+
     - name: Upload ZAP Reports
+      if: always() # upload even if job fails
       uses: actions/upload-artifact@v4
       with:
         name: zap-reports
