@@ -16,7 +16,7 @@ jobs:
 
       - name: Run ZAP API scan
         run: |
-          docker run --rm -v $(pwd):/zap/wrk/:rw owasp/zap2docker-weekly zap-api-scan.py \
+          docker run --rm -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:weekly zap-api-scan.py \
             -t /zap/wrk/openapi.json \
             -f openapi \
             -r zap-report-$(date -u +'%Y%m%d').html \
