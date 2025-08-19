@@ -1,45 +1,31 @@
-name: ZAP API Scan
+name: ZAP API Security Scan
 
 on:
+  workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
 
 jobs:
-  zap_scan:
+  zap-scan:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Run ZAP API Scan
-      run: |
-        docker run --rm -v $(pwd):/zap/wrk zaproxy/zap-stable \
-          python3 /zap/zap-api-scan.py \
+      - name: Run ZAP API scan
+        run: |
+          docker run --rm -v $(pwd):/zap/wrk/:rw owasp/zap2docker-weekly zap-api-scan.py \
             -t /zap/wrk/openapi.json \
             -f openapi \
-            -J /zap/wrk/dast-report.json \
-            -r /zap/wrk/dast-report.html \
-            -d -I -S \
-            -z "-config api.disablekey=true"
+            -r zap-report-$(date -u +'%Y%m%d').html \
+            -J zap-report.json
 
-    - name: Check for High/Critical Vulnerabilities
-      run: |
-        echo "Checking ZAP report for High/Critical alerts..."
-        if jq '.site[].alerts[] | select(.risk == "High" or .risk == "Critical")' dast-report.json | grep -q .; then
-          echo "❌ High or Critical vulnerabilities found!"
-          exit 1
-        else
-          echo "✅ No High/Critical vulnerabilities found."
-        fi
-
-    - name: Upload ZAP Reports
-      if: always() # upload even if job fails
-      uses: actions/upload-artifact@v4
-      with:
-        name: zap-reports
-        path: |
-          dast-report.json
-          dast-report.html
+      - name: Upload ZAP Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-scan-reports
+          path: |
+            zap-report-*.html
+            zap-report.json
