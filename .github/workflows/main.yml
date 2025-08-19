@@ -12,5 +12,14 @@ jobs:
 
     - name: Run ZAP Scan
       run: |
-        docker run zaproxy/zap-stable python3 zap-api-scan.py -t openapi.json -J dast-report.json -d -r dast-report.html -I -S -f openapi -z options.prop
+        docker run --rm -v $(pwd):/zap/wrk zaproxy/zap-stable \
+          python3 zap-api-scan.py \
+            -t /zap/wrk/openapi.json \
+            -J /zap/wrk/dast-report.json \
+            -d \
+            -r /zap/wrk/dast-report.html \
+            -I -S -f openapi \
+            -z /zap/wrk/options.prop
+
+        # docker run zaproxy/zap-stable python3 zap-api-scan.py -t openapi.json -J dast-report.json -d -r dast-report.html -I -S -f openapi -z options.prop
         # docker run zaproxy/zap-stable ls -R
